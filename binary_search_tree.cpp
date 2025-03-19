@@ -1,112 +1,100 @@
 #include <iostream>
 using namespace std;
 
-// Структура для представления узла бинарного дерева поиска
-struct TreeNode {
-    int val;
-    TreeNode* left;
-    TreeNode* right;
+// Структура узла бинарного дерева
+struct Node {
+    int key;
+    Node* left;
+    Node* right;
 
-    // Конструктор для создания нового узла
-    TreeNode(int value) : val(value), left(nullptr), right(nullptr) {}
+    Node(int value) : key(value), left(nullptr), right(nullptr) {}
 };
 
-// Функция для нахождения минимального значения в правом поддереве
-TreeNode* findMin(TreeNode* root) {
-    while (root->left != nullptr) {
-        root = root->left;
+// Класс бинарного дерева поиска
+class BST {
+private:
+    // Вспомогательная функция для вставки
+    Node* insert(Node* root, int key) {
+        if (!root) return new Node(key);
+        if (key < root->key)
+            root->left = insert(root->left, key);
+        else
+            root->right = insert(root->right, key);
+        return root;
     }
-    return root;
-}
 
-// Функция для удаления узла с заданным значением
-TreeNode* deleteNode(TreeNode* root, int key) {
-    if (root == nullptr) {
-        return nullptr; // Узел не найден, ничего удалять не нужно
-    }
-
-    // Если ключ меньше значения текущего узла, идём в левое поддерево
-    if (key < root->val) {
-        root->left = deleteNode(root->left, key);
-    }
-    // Если ключ больше значения текущего узла, идём в правое поддерево
-    else if (key > root->val) {
-        root->right = deleteNode(root->right, key);
-    }
-    // Если найден узел, который нужно удалить
-    else {
-        // Узел без дочерних узлов или с одним дочерним узлом
-        if (root->left == nullptr) {
-            TreeNode* temp = root->right;
-            delete root;
-            return temp;
-        } else if (root->right == nullptr) {
-            TreeNode* temp = root->left;
-            delete root;
-            return temp;
+    // Вспомогательная функция поиска минимального узла в дереве
+    Node* minValueNode(Node* node) {
+        Node* current = node;
+        while (current && current->left) {
+            current = current->left;
         }
-
-        // Узел с двумя дочерними узлами: ищем минимальное значение в правом поддереве
-        TreeNode* temp = findMin(root->right);
-
-        // Копируем значение найденного узла в текущий узел
-        root->val = temp->val;
-
-        // Удаляем дубликат найденного узла в правом поддереве
-        root->right = deleteNode(root->right, temp->val);
+        return current;
     }
-    return root;
-}
 
-// Функция для вставки узла в бинарное дерево поиска
-TreeNode* insert(TreeNode* root, int val) {
-    if (root == nullptr) {
-        return new TreeNode(val);
-    }
-    if (val < root->val) {
-        root->left = insert(root->left, val);
-    } else if (val > root->val) {
-        root->right = insert(root->right, val);
-    }
-    return root;
-}
+    // Вспомогательная функция удаления узла
+    Node* deleteNode(Node* root, int key) {
+        if (!root) return root;
 
-// Функция для вывода дерева (обход LNR - симметричный)
-void inorderTraversal(TreeNode* root) {
-    if (root == nullptr) {
-        return;
-    }
-    inorderTraversal(root->left);
-    cout << root->val << " ";
-    inorderTraversal(root->right);
-}
+        if (key < root->key) {
+            root->left = deleteNode(root->left, key);
+        } else if (key > root->key) {
+            root->right = deleteNode(root->right, key);
+        } else {
+            // Узел с одним или без детей
+            if (!root->left) {
+                Node* temp = root->right;
+                delete root;
+                return temp;
+            } else if (!root->right) {
+                Node* temp = root->left;
+                delete root;
+                return temp;
+            }
 
+            // Узел с двумя детьми: берем минимальный узел в правом поддереве
+            Node* temp = minValueNode(root->right);
+            root->key = temp->key;
+            root->right = deleteNode(root->right, temp->key);
+        }
+        return root;
+    }
+
+    // Вспомогательная функция для вывода (LNR - симметричный обход)
+    void inorder(Node* root) {
+        if (!root) return;
+        inorder(root->left);
+        cout << root->key << " ";
+        inorder(root->right);
+    }
+
+public:
+    Node* root;
+
+    BST() : root(nullptr) {}
+
+    void insert(int key) { root = insert(root, key); }
+    void deleteNode(int key) { root = deleteNode(root, key); }
+    void inorder() { inorder(root); cout << endl; }
+};
+
+// Тестирование
 int main() {
-    TreeNode* root = nullptr;
+    BST tree;
+    tree.insert(50);
+    tree.insert(30);
+    tree.insert(20);
+    tree.insert(40);
+    tree.insert(70);
+    tree.insert(60);
+    tree.insert(80);
 
-    // Вставка узлов в дерево
-    root = insert(root, 50);
-    root = insert(root, 30);
-    root = insert(root, 70);
-    root = insert(root, 20);
-    root = insert(root, 40);
-    root = insert(root, 60);
-    root = insert(root, 80);
+    cout << "BST (inorder): ";
+    tree.inorder();
 
-    cout << "Исходное дерево (inorder): ";
-    inorderTraversal(root);
-    cout << endl;
-
-    int key;
-    cout << "Введите значение для удаления: ";
-    cin >> key;
-
-    // Удаление узла
-    root = deleteNode(root, key);
-
-    cout << "Дерево после удаления " << key << " (inorder): ";
-    inorderTraversal(root);
-    cout << endl;
+    tree.deleteNode(50);
+    cout << "BST после удаления 50: ";
+    tree.inorder();
 
     return 0;
 }
