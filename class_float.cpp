@@ -1,110 +1,84 @@
 #include <iostream>
-#include <numeric> // Для std::gcd
-
 using namespace std;
 
 class Fraction {
 private:
-    int numerator;   // Числитель
-    int denominator; // Знаменатель
-
-    // Сокращение дроби
-    void simplify() {
-        int gcd = std::gcd(numerator, denominator);
-        numerator /= gcd;
-        denominator /= gcd;
-
-        // Если знаменатель отрицательный, переносим знак к числителю
-        if (denominator < 0) {
-            numerator = -numerator;
-            denominator = -denominator;
-        }
-    }
+    int numerator;   // числитель
+    int denominator; // знаменатель
 
 public:
-    // Конструктор по умолчанию
-    Fraction(int num = 0, int den = 1) : numerator(num), denominator(den) {
-        if (den == 0) {
-            throw invalid_argument("Знаменатель не может быть равен 0");
-        }
-        simplify();
+    // Конструктор
+    Fraction(int num = 0, int denom = 1) {
+        numerator = num;
+        denominator = denom;
     }
 
-    // Операция сложения
-    Fraction operator+(const Fraction& other) const {
-        int num = numerator * other.denominator + other.numerator * denominator;
-        int den = denominator * other.denominator;
-        return Fraction(num, den);
+    // Операции сравнения
+    bool operator==(const Fraction& other) const {
+        return numerator * other.denominator == other.numerator * denominator;
     }
 
-    // Операция вычитания
-    Fraction operator-(const Fraction& other) const {
-        int num = numerator * other.denominator - other.numerator * denominator;
-        int den = denominator * other.denominator;
-        return Fraction(num, den);
+    bool operator!=(const Fraction& other) const {
+        return !(*this == other);
     }
 
-    // Операция умножения
-    Fraction operator*(const Fraction& other) const {
-        int num = numerator * other.numerator;
-        int den = denominator * other.denominator;
-        return Fraction(num, den);
-    }
-
-    // Операция деления
-    Fraction operator/(const Fraction& other) const {
-        if (other.numerator == 0) {
-            throw invalid_argument("Деление на ноль невозможно");
-        }
-        int num = numerator * other.denominator;
-        int den = denominator * other.numerator;
-        return Fraction(num, den);
-    }
-
-    // Операция сравнения (меньше)
     bool operator<(const Fraction& other) const {
         return numerator * other.denominator < other.numerator * denominator;
     }
 
-    // Операция сравнения (равно)
-    bool operator==(const Fraction& other) const {
-        return numerator == other.numerator && denominator == other.denominator;
-    }
-
-    // Операция сравнения (больше)
     bool operator>(const Fraction& other) const {
-        return numerator * other.denominator > other.numerator * denominator;
+        return other < *this;
     }
 
-    // Вывод дроби
-    friend ostream& operator<<(ostream& os, const Fraction& fraction) {
-        os << fraction.numerator;
-        if (fraction.denominator != 1) {
-            os << "/" << fraction.denominator;
-        }
-        return os;
+    // Арифметические операции
+    Fraction operator+(const Fraction& other) const {
+        int commonDenom = denominator * other.denominator;
+        int num = numerator * other.denominator + other.numerator * denominator;
+        return Fraction(num, commonDenom);
+    }
+
+    Fraction operator-(const Fraction& other) const {
+        int commonDenom = denominator * other.denominator;
+        int num = numerator * other.denominator - other.numerator * denominator;
+        return Fraction(num, commonDenom);
+    }
+
+    Fraction operator*(const Fraction& other) const {
+        return Fraction(numerator * other.numerator, denominator * other.denominator);
+    }
+
+    // Вывод
+    void print() const {
+        cout << numerator << "/" << denominator << endl;
     }
 };
 
 int main() {
-    try {
-        Fraction a(3, 4); // 3/4
-        Fraction b(2, 5); // 2/5
+    Fraction f1(1, 2); // 1/2
+    Fraction f2(3, 4); // 3/4
 
-        cout << "Дробь A: " << a << endl;
-        cout << "Дробь B: " << b << endl;
+    cout << "f1: ";
+    f1.print();
+    cout << "f2: ";
+    f2.print();
 
-        cout << "A + B = " << (a + b) << endl;
-        cout << "A - B = " << (a - b) << endl;
-        cout << "A * B = " << (a * b) << endl;
-        cout << "A / B = " << (a / b) << endl;
+    Fraction sum = f1 + f2;
+    cout << "f1 + f2 = ";
+    sum.print();
 
-        cout << "A < B: " << (a < b ? "true" : "false") << endl;
-        cout << "A == B: " << (a == b ? "true" : "false") << endl;
-        cout << "A > B: " << (a > b ? "true" : "false") << endl;
-    } catch (const invalid_argument& e) {
-        cerr << "Ошибка: " << e.what() << endl;
-    }
+    Fraction diff = f1 - f2;
+    cout << "f1 - f2 = ";
+    diff.print();
+
+    Fraction product = f1 * f2;
+    cout << "f1 * f2 = ";
+    product.print();
+
+    // Сравнение
+    if (f1 == f2)
+        cout << "f1 и f2 равны." << endl;
+    else
+        cout << "f1 и f2 не равны." << endl;
 
     return 0;
 }

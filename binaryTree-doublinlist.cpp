@@ -1,114 +1,65 @@
 #include <iostream>
 using namespace std;
 
-// Структура узла двоичного дерева
-struct TreeNode {
-    int val;
-    TreeNode* left;
-    TreeNode* right;
+// Структура узла бинарного дерева
+struct Node {
+    int data;
+    Node* left;
+    Node* right;
 
-    TreeNode(int value) : val(value), left(nullptr), right(nullptr) {}
+    Node(int val) : data(val), left(nullptr), right(nullptr) {}
 };
 
-// Структура узла двусвязного списка
-struct DLLNode {
-    int val;
-    DLLNode* prev;
-    DLLNode* next;
+// Глобальные указатели
+Node* head = nullptr; // Голова списка
+Node* prev = nullptr; // Предыдущий узел
 
-    DLLNode(int value) : val(value), prev(nullptr), next(nullptr) {}
-};
+// Функция преобразования бинарного дерева в двусвязный список
+void treeToDoublyLinkedList(Node* root) {
+    if (!root) return;
 
-// Класс для преобразования дерева в двусвязный список
-class BinaryTreeToDLL {
-private:
-    DLLNode* head = nullptr; // Головной узел двусвязного списка
-    DLLNode* prev = nullptr; // Предыдущий узел в процессе преобразования
+    // Рекурсивно обрабатываем левое поддерево
+    treeToDoublyLinkedList(root->left);
 
-    // Рекурсивная функция преобразования
-    void inorder(TreeNode* root) {
-        if (root == nullptr) {
-            return;
-        }
-
-        // Рекурсивный обход левого поддерева
-        inorder(root->left);
-
-        // Создание нового узла двусвязного списка
-        DLLNode* current = new DLLNode(root->val);
-
-        // Если это первый узел обхода, он становится головой списка
-        if (head == nullptr) {
-            head = current;
-        } else {
-            // Связываем текущий узел с предыдущим
-            prev->next = current;
-            current->prev = prev;
-        }
-        prev = current; // Обновляем предыдущий узел
-
-        // Рекурсивный обход правого поддерева
-        inorder(root->right);
+    // Связываем текущий узел с предыдущим
+    if (::prev == nullptr) {
+        head = root;
     }
-
-public:
-    // Функция для преобразования
-    DLLNode* convert(TreeNode* root) {
-        inorder(root); // Запуск преобразования
-        return head;   // Возвращаем головной узел двусвязного списка
+    else {
+        ::prev->right = root;
+        root->left = ::prev;
     }
+    ::prev = root;
 
-    // Функция для вывода двусвязного списка в прямом порядке
-    void printForward(DLLNode* head) {
-        DLLNode* temp = head;
-        while (temp != nullptr) {
-            cout << temp->val;
-            if (temp->next != nullptr) {
-                cout << "<=>";
-            }
-            temp = temp->next;
-        }
-        cout << endl;
+    // Рекурсивно обрабатываем правое поддерево
+    treeToDoublyLinkedList(root->right);
+}
+
+// Функция вывода двусвязного списка
+void printDoublyLinkedList(Node* head) {
+    Node* curr = head;
+    while (curr) {
+        cout << curr->data;
+        if (curr->right) cout << " <=> ";
+        curr = curr->right;
     }
-
-    // Функция для вывода двусвязного списка в обратном порядке
-    void printBackward(DLLNode* head) {
-        DLLNode* tail = head;
-        // Находим хвостовой узел
-        while (tail->next != nullptr) {
-            tail = tail->next;
-        }
-
-        // Обратный вывод
-        while (tail != nullptr) {
-            cout << tail->val;
-            if (tail->prev != nullptr) {
-                cout << "<=>";
-            }
-            tail = tail->prev;
-        }
-        cout << endl;
-    }
-};
+    cout << endl;
+}
 
 int main() {
-    // Создаём дерево
-    TreeNode* root = new TreeNode(10);
-    root->left = new TreeNode(20);
-    root->right = new TreeNode(30);
-    root->left->left = new TreeNode(40);
-    root->right->right = new TreeNode(60);
+    // Создаем бинарное дерево
+    Node* root = new Node(10);
+    root->left = new Node(20);
+    root->right = new Node(30);
+    root->left->left = new Node(40);
+    root->left->right = new Node(60);
 
-    // Преобразуем дерево в двусвязный список
-    BinaryTreeToDLL converter;
-    DLLNode* head = converter.convert(root);
+    // Преобразуем в двусвязный список
+    treeToDoublyLinkedList(root);
 
-    // Вывод двусвязного списка
-    cout << "DLL в прямом порядке: ";
-    converter.printForward(head);
-
-    cout << "DLL в обратном порядке: ";
-    converter.printBackward(head);
+    // Выводим двусвязный список
+    cout << "DLL: ";
+    printDoublyLinkedList(head);
 
     return 0;
 }
