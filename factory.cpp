@@ -13,9 +13,16 @@ public:
     }
 };
 
+class Cat : public Animal {
+    public:
+        void speak() override {
+            cout << "Meow Meow" << endl;
+        }
+    };
+
 class Factory {
 public:
-    static Animal* create() { return new Dog(); }
+    static Animal* create() { return new Cat(); }
 };
 
 int main() {

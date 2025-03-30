@@ -1,85 +1,119 @@
 #include <iostream>
 using namespace std;
 
-// Структура узла BST
 struct Node {
-    int data;
     Node* left;
     Node* right;
+    int data;
+
     Node(int value) : data(value), left(nullptr), right(nullptr) {}
 };
 
-// Функция для поиска минимального узла в правом поддереве
-Node* findMin(Node* root) {
-    while (root->left) {
-        root = root->left;
+class BinarySearchTree {
+public:
+    Node* root;
+
+    BinarySearchTree() : root(nullptr) {}
+
+    Node* findMin(Node* node) {
+        while (node->left) {
+            node = node->left;
+        }
+        return node;
     }
-    return root;
-}
 
-// Функция удаления узла в BST
-Node* deleteNode(Node* root, int key) {
-    if (!root) return nullptr;
+    Node* delNode(Node* node, int val) {
+        if (!node) return nullptr;
 
-    if (key < root->data) {
-        root->left = deleteNode(root->left, key);
-    } else if (key > root->data) {
-        root->right = deleteNode(root->right, key);
-    } else {
-        // Узел с одним или нулем потомков
-        if (!root->left) {
-            Node* temp = root->right;
-            delete root;
-            return temp;
-        } else if (!root->right) {
-            Node* temp = root->left;
-            delete root;
-            return temp;
+        if (val < node->data) {
+            node->left = delNode(node->left, val);
+        }
+        else if (val > node->data) {
+            node->right = delNode(node->right, val);
+        }
+        else {
+            if (!node->left) {
+                Node* temp = node->right;
+                delete node;
+                return temp;
+            }
+            else if (!node->right) {
+                Node* temp = node->left;
+                delete node;
+                return temp;
+            }
+
+            Node* temp = findMin(node->right);
+            node->data = temp->data;
+            node->right = delNode(node->right, temp->data);
+        }
+        return node;
+    }
+
+    Node* insert(Node* node, int val) {
+        if (!node) return new Node(val);
+
+        if (val < node->data) {
+            node->left = insert(node->left, val);
+        }
+        else if (val > node->data) {
+            node->right = insert(node->right, val);
         }
 
-        // Узел с двумя потомками: берем минимальный в правом поддереве
-        Node* temp = findMin(root->right);
-        root->data = temp->data;
-        root->right = deleteNode(root->right, temp->data);
+        return node;
     }
-    return root;
-}
 
-// Вспомогательная функция для вставки узлов в BST
-Node* insert(Node* root, int value) {
-    if (!root) return new Node(value);
-    if (value < root->data) root->left = insert(root->left, value);
-    else root->right = insert(root->right, value);
-    return root;
-}
+    bool search(Node* node, int val) {
+        if (!node) return false;
+        
+        if (val == node->data) {
+            return true;
+        }
+        if (val < node->data) {
+            return search(node->left, val);
+        }
+        else if (val > node->data) {
+            return search(node->right, val);
+        }
 
-// Функция для вывода дерева (симметричный обход)
-void inorder(Node* root) {
-    if (!root) return;
-    inorder(root->left);
-    cout << root->data << " ";
-    inorder(root->right);
-}
+        return false;
+    }
+
+    void print(Node* node, int space = 0, int indent = 4) {
+        if (!node) return;
+
+        space += indent;
+        print(node->right, space);
+
+        cout << endl;
+        for (int i = indent; i < space; i++) cout << " ";
+        cout << node->data << endl;
+
+        print(node->left, space);
+    }
+
+    void destroy(Node* node) {
+        if (!node) return;
+        destroy(node->left);
+        destroy(node->right);
+        delete node;
+    }
+
+    ~BinarySearchTree () {
+        destroy(root);
+    }
+};
 
 int main() {
-    Node* root = nullptr;
-    root = insert(root, 50);
-    root = insert(root, 30);
-    root = insert(root, 70);
-    root = insert(root, 20);
-    root = insert(root, 40);
-    root = insert(root, 60);
-    root = insert(root, 80);
+    BinarySearchTree t;
 
-    cout << "BST до удаления: ";
-    inorder(root);
-    cout << endl;
+    t.root = t.insert(t.root, 50);
+    t.insert(t.root, 30);
+    t.insert(t.root, 70);
+    t.insert(t.root, 20);
+    t.insert(t.root, 40);
+    t.insert(t.root, 60);
+    t.insert(t.root, 80);
 
-    root = deleteNode(root, 50);
-
-    cout << "BST после удаления 50: ";
-    inorder(root);
-    cout << endl;
-
-    return 0;
+    t.print(t.root);
 }
